@@ -48,7 +48,9 @@ Type :help for more information.
 
 scala&gt;
 
-http://127.0.0.1:4040/jobs/
+![](/assets/importcl.png)
+
+[http://127.0.0.1:4040/jobs/](http://127.0.0.1:4040/jobs/)
 
 ![](/assets/importsp.png)
 
