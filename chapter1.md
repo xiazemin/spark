@@ -66,14 +66,6 @@ export PATH=$PATH:$SPARK\_HOME/bin
 
 export JAVA\_HOME=/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/
 
-这里写图片描述
-
-这里写图片描述
-
-验证安装情况
-
-此时就可以检验成果喽
-
 进入安装包的sbin 目录执行 start-all.sh 脚本
 
 ./start-all.sh
