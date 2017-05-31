@@ -46,3 +46,9 @@ Password:
 
 Last login: Wed May 31 11:12:34 2017
 
+$ exit
+
+logout
+
+Connection to localhost closed.
+
