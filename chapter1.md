@@ -70,39 +70,13 @@ export JAVA\_HOME=/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/
 
 ./start-all.sh
 
-1
-
-1
-
-这里写图片描述
-
-此时可能会出现这个情况，我们可以直接忽略
-
-这里写图片描述
-
-此时我们可以通过jps 命令 检验运行情况
-
-这里写图片描述
-
 打开Spark Master 页面查看集群情况，我相信你会直接点击。
 
 [http://localhost:8080/](http://localhost:8080/)
-
-如图
-
-这里写图片描述
 
 停止spark
 
 进入spark的sbin目录，执行命令
 
 $ ./stop-all.sh
-
-1
-
-1
-
-接下来就是spark 的小程序了
-
-Spark进阶体验
 
