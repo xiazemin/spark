@@ -22,57 +22,15 @@ vi spark-env.sh
 
 //添加如下信息
 
-export SCALA\_HOME=/Users/yangyibo/Software/scala
+export SCALA\_HOME=/Users/didi/scala/
 
-export JAVA\_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0\_92.jdk/Contents/Home
+export JAVA\_HOME=/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/
 
-export SPARK\_MASTER\_IP=192.168.100.176
+export SPARK\_MASTER\_IP=127.0.0.1
 
 export SPARK\_WORKER\_MEMORY=512m
 
-export master=spark://192.168.100.176:7070
-
-1
-
-2
-
-3
-
-4
-
-5
-
-6
-
-7
-
-8
-
-9
-
-1
-
-2
-
-3
-
-4
-
-5
-
-6
-
-7
-
-8
-
-9
-
-如下图
-
-这里写图片描述
-
-这里写图片描述
+export master=spark://127.0.0.1:7070
 
 修改 slaves.template 添加信息
 
