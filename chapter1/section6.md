@@ -20,7 +20,7 @@ To adjust logging level use sc.setLogLevel\(newLevel\). For SparkR, use setLogLe
 
 17/05/31 13:37:12 WARN ObjectStore: Failed to get database global\_temp, returning NoSuchObjectException
 
-Spark context Web UI available at http://172.24.26.76:4040
+Spark context Web UI available at [http://172.24.26.76:4040](http://172.24.26.76:4040)
 
 Spark context available as 'sc' \(master = local\[\*\], app id = local-1496209025218\).
 
@@ -34,11 +34,11 @@ Welcome to
 
     \_\ \/ \_ \/ \_ \`/ \_\_/  '\_/
 
-   /\_\_\_/ .\_\_/\\_,\_/\_/ /\_/\\_\   version 2.1.1
+/\_\_\_/ .\_\_/\_,\_/\_/ /\_/\\_   version 2.1.1
 
-      /\_/
-
-
+```
+  /\_/
+```
 
 Using Scala version 2.11.8 \(Java HotSpot\(TM\) 64-Bit Server VM, Java 1.8.0\_131\)
 
@@ -46,7 +46,9 @@ Type in expressions to have them evaluated.
 
 Type :help for more information.
 
-
-
 scala&gt;
+
+http://127.0.0.1:4040/jobs/
+
+![](/assets/importsp.png)
 
