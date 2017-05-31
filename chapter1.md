@@ -60,31 +60,11 @@ vi .bash\_profile
 
 \#SPARK VARIABLES START
 
-export SPARK\_HOME=/Users/yangyibo/Software/spark-2.0.1-bin-hadoop2.7
+export SPARK\_HOME=/Users/didi/spark/spark-2.1.1-bin-hadoop2.7
 
 export PATH=$PATH:$SPARK\_HOME/bin
 
-1
-
-2
-
-3
-
-4
-
-5
-
-1
-
-2
-
-3
-
-4
-
-5
-
-如下图，mac 注意路径哦，
+export JAVA\_HOME=/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/
 
 这里写图片描述
 
