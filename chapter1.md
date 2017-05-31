@@ -40,23 +40,7 @@ vi slaves.template
 
 master
 
-1
-
-2
-
-3
-
-1
-
-2
-
-3
-
-如下图
-
-这里写图片描述
-
-这里写图片描述
+\#localhost
 
 配置环境变量
 
