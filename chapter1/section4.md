@@ -24,11 +24,7 @@ Java HotSpot\(TM\) 64-Bit Server VM \(build 25.131-b11, mixed mode\)
 
 $    vi ../conf/spark-env.sh
 
-\#
-
-export JAVA\_HOME=/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/
-
-
+\#export JAVA\_HOME=/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/
 
 export JAVA\_HOME=/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/
 
