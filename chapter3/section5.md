@@ -30,31 +30,17 @@ println\("Hello world!"\)
 
 首先新建一个scala工程：
 
-
-
-File --&gt; New --&gt; Scala Project 
-
-
+File --&gt; New --&gt; Scala Project
 
 建立完成后在，工程下面找到src文件夹，右键
 
-
-
 New --&gt; Package
-
-
 
 然后在Package上右键
 
-
-
 New --&gt; Scala Object
 
-
-
 然后打开你新建的scala object，写入如下代码：
-
-
 
 1 object HelloWorld {
 
@@ -67,4 +53,6 @@ New --&gt; Scala Object
 5 }
 
 然后运行该class即可。
+
+必须先建package再建object，否则一直报错，不出scala application
 
