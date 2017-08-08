@@ -6,9 +6,11 @@ starting org.apache.spark.deploy.master.Master, logging to /Users/didi/spark/spa
 
 failed to launch: nice -n 0 /Users/didi/spark/spark/bin/spark-class org.apache.spark.deploy.master.Master --host bogon --port 7077 --webui-port 8080
 
-  	at io.netty.util.concurrent.DefaultThreadFactory$DefaultRunnableDecorator.run\(DefaultThreadFactory.java:144\)
+```
+  at io.netty.util.concurrent.DefaultThreadFactory$DefaultRunnableDecorator.run\(DefaultThreadFactory.java:144\)
 
-  	at java.lang.Thread.run\(Thread.java:748\)
+  at java.lang.Thread.run\(Thread.java:748\)
+```
 
 full log in /Users/didi/spark/spark/logs/spark-didi-org.apache.spark.deploy.master.Master-1-bogon.out
 
@@ -24,19 +26,13 @@ Exception in thread "main" java.net.BindException: Can't assign requested addres
 
 解决办法：
 
-
-
 在spark-env.sh中配置：
-
-
 
 export  SPARK\_MASTER\_HOST=127.0.0.1
 
 export  SPARK\_LOCAL\_IP=127.0.0.1
 
-
-
-
+更多如下：
 
 ```
 export SPARK_WORKER_MEMORY=512m
