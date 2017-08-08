@@ -1,2 +1,6 @@
-# section1
+# spark-shell
+
+$ bin/spark-shell
+
+![](/assets/importsh.png)
 
