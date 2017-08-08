@@ -12,21 +12,21 @@
 
 scala和Java不同,文件的名称不必和Object的名称相同.
 
-package com.scala.demo  
+package com.scala.demo
 
-  
+object HelloWorld {
 
-object HelloWorld {  
+def main\(args:Array\[String\]\)
 
-  def main\(args:Array\[String\]\)  
+{
 
-  {  
+```
+println\("Hello world!"\)  
+```
 
-    println\("Hello world!"\)  
+}
 
-  }  
+}
 
-  
 
-} 
 
