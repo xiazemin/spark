@@ -10,9 +10,9 @@ localhost: starting org.apache.spark.deploy.worker.Worker, logging to /Users/did
 
 localhost: failed to launch: nice -n 0 /Users/didi/spark/spark/bin/spark-class org.apache.spark.deploy.worker.Worker --webui-port 8081 spark://bogon:7077
 
-localhost:   	at io.netty.util.concurrent.DefaultThreadFactory$DefaultRunnableDecorator.run\(DefaultThreadFactory.java:144\)
+localhost:       at io.netty.util.concurrent.DefaultThreadFactory$DefaultRunnableDecorator.run\(DefaultThreadFactory.java:144\)
 
-localhost:   	at java.lang.Thread.run\(Thread.java:748\)
+localhost:       at java.lang.Thread.run\(Thread.java:748\)
 
 localhost: full log in /Users/didi/spark/spark/logs/spark-didi-org.apache.spark.deploy.worker.Worker-1-bogon.out
 
@@ -22,7 +22,27 @@ $ cat /Users/didi/spark/spark/logs/spark-didi-org.apache.spark.deploy.worker.Wor
 
 Exception in thread "main" java.net.BindException: Can't assign requested address: Service 'sparkWorker' failed after 16 retries \(on a random free port\)! Consider explicitly setting the appropriate binding address for the service 'sparkWorker' \(for example spark.driver.bindAddress for SparkDriver\) to the correct binding address.
 
-	at sun.nio.ch.Net.bind0\(Native Method\)
+```
+at sun.nio.ch.Net.bind0\(Native Method\)
+```
 
+这个报错提示是在Spark启动从节点时出现的。 
 
+解决的方法是，在spark-env.sh中加入一条 
+
+SPARK\_LOCAL\_IP=127.0.0.1 
+
+然后就完美解决报错了！
+
+$ jps
+
+38851 Worker
+
+31978
+
+38861 Jps
+
+637 Main
+
+30974
 
