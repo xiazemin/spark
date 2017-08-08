@@ -48,5 +48,25 @@ export SPARK_MASTER_IP=52.211.60.97
 export SPARK_MASTER_WEBUI_PORT=4041
 ```
 
+$ sbin/start-all.sh
+
+starting org.apache.spark.deploy.master.Master, logging to /Users/didi/spark/spark/logs/spark-didi-org.apache.spark.deploy.master.Master-1-bogon.out
+
+Password:
+
+localhost: starting org.apache.spark.deploy.worker.Worker, logging to /Users/didi/spark/spark/logs/spark-didi-org.apache.spark.deploy.worker.Worker-1-bogon.out
+
+$ jps
+
+39158 Jps
+
+39114 Master
+
+39147 Worker
+
+637 Main
+
+30974
+
 
 
