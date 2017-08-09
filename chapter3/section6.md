@@ -20,5 +20,9 @@ Type in expressions for evaluation. Or try :help.
 
 java.net.BindException: Can't assign requested address: Service 'sparkDriver' failed after 16 retries \(on a random free port\)! Consider explicitly setting the appropriate binding address for the service 'sparkDriver' \(for example spark.driver.bindAddress for SparkDriver\) to the correct binding address.
 
-	at sun.nio.ch.Net.bind0\(Native Method\)
+```
+at sun.nio.ch.Net.bind0\(Native Method\)
+```
+
+
 
