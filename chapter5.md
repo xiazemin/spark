@@ -26,3 +26,7 @@ PING bogon \(127.0.0.1\): 56 data bytes
 
 64 bytes from 127.0.0.1: icmp\_seq=3 ttl=64 time=0.075 ms
 
+重试成功
+
+
+
