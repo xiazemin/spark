@@ -28,5 +28,5 @@ PING bogon \(127.0.0.1\): 56 data bytes
 
 重试成功
 
-
+17/08/09 19:48:52 INFO Utils: Successfully started service 'sparkDriver' on port 65306.
 
