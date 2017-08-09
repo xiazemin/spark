@@ -34,6 +34,12 @@ $ hdfs dfs -lsr /
 
 $ ./bin/spark-shell
 
+Spark context Web UI available at http://127.0.0.1:4040
+
+Spark context available as 'sc' \(master = local\[\*\], app id = local-1502255446810\).
+
+Spark session available as 'spark'.
+
 Setting default log level to "WARN".
 
 scala&gt; var file=sc.textFile\("hdfs:/input/input1.txt"\)
