@@ -24,5 +24,12 @@ java.net.BindException: Can't assign requested address: Service 'sparkDriver' fa
 at sun.nio.ch.Net.bind0\(Native Method\)
 ```
 
+原因：SparkConf\(\).setMaster（"local［4］"），参数有问题 
+
+正确  
+val  conf = new SparkConf\(\).setMaster\("local"\).setAppName\("CountingSheep"\).set\("spark.executor.memory", "1g"\)
+
+
+
 
 
