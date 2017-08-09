@@ -10,63 +10,41 @@ port\_no: 9000
 
 完整程序
 
-p
-
-ackage spark
-
-
+package spark
 
 import org.apache.spark.\_
 
-
-
 import SparkContext.\_
-
-
 
 object WordCount {
 
-
-
 def main\(args: Array\[String\]\) {
 
+val conf = new SparkConf\\(\\)
 
-
- val conf = new SparkConf\\(\\)
-
-
-
-         .setMaster\\("local"\\)
+```
+     .setMaster\\("local"\\)
 
 
 
-         .setAppName\\("CountingSheep"\\)
+     .setAppName\\("CountingSheep"\\)
 
 
 
-         .set\\("spark.executor.memory", "1g"\\)
+     .set\\("spark.executor.memory", "1g"\\)
+```
 
+val sc = new SparkContext\\(conf\\)
 
+val file=sc.textFile\("hdfs://localhost:8020/input/\*.txt"\)
 
- val sc = new SparkContext\\(conf\\)
-
-val file=sc.textFile\("file:///Users/didi/java/WordCount/input/\*.txt"\)
-
-
-
- val count=file.flatMap\\(line=&gt;line.split\\(" "\\)\\).map\\(word=&gt;\\(word,1\\)\\).reduceByKey\\(\\_+\\_\\)
-
-
+val count=file.flatMap\\(line=&gt;line.split\\(" "\\)\\).map\\(word=&gt;\\(word,1\\)\\).reduceByKey\\(\_+\_\\)
 
 count.collect.foreach\\(println\\)
 
-
-
- sc.stop\\(\\)
+sc.stop\\(\\)
 
 }
-
-
 
 }
 
