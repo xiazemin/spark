@@ -56,17 +56,13 @@ scala&gt; var file=sc.textFile\("hdfs:/input/\*.txt"\)
 
 file: org.apache.spark.rdd.RDD\[String\] = hdfs:/input/\*.txt MapPartitionsRDD\[6\] at textFile at &lt;console&gt;:24
 
-
-
 scala&gt; val count=file.flatMap\(line=&gt;line.split\(" "\)\).map\(word=&gt;\(word,1\)\).reduceByKey\(\_+\_\)
 
 count: org.apache.spark.rdd.RDD\[\(String, Int\)\] = ShuffledRDD\[9\] at reduceByKey at &lt;console&gt;:26
-
-
 
 scala&gt; count.collect
 
 res1: Array\[\(String, Int\)\] = Array\(\(hello,2\), \(world,1\), \(hadoop,1\)\)
 
-
+![](/assets/importwc.png)
 
