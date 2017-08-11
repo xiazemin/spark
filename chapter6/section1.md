@@ -58,5 +58,29 @@ sasfs  fgd
 
 dfg   gdggh  rry vdfg dff
 
+17/08/11 11:36:52 INFO scheduler.TaskSchedulerImpl: Removed TaskSet 72.0, whose tasks have all completed, from pool
+
+17/08/11 11:36:52 INFO scheduler.DAGScheduler: ResultStage 72 \(print at Streaming.scala:24\) finished in 0.006 s
+
+17/08/11 11:36:52 INFO scheduler.DAGScheduler: Job 36 finished: print at Streaming.scala:24, took 0.012587 s
+
+-------------------------------------------
+
+Time: 1502422612000 ms
+
+-------------------------------------------
+
+\(,3\)
+
+\(dff,1\)
+
+\(vdfg,1\)
+
+\(gdggh,1\)
+
+\(dfg,1\)
+
+\(rry,1\)
+
 
 
