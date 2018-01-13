@@ -45,4 +45,5 @@
 * [chapter15](chapter15.md)
   * [section15-1](chapter15/section1.md)
 * [log4j](log4j.md)
+* [Hive基本原理](hiveji-ben-yuan-li.md)
 

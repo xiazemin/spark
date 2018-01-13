@@ -1,0 +1,10 @@
+1  Hive基本原理
+
+
+
+Hadoop是一个流行的开源框架，用来存储和处理商用硬件上的大规模数据集。对于HDFS上的海量日志而言，编写Mapreduce程序代码对于类似数据仓库的需求来说总是显得相对于难以维护和重用，Hive作为一种基于Hadoop的数据仓库解决方案应运而生，并得到了广泛应用。
+
+
+
+Hive是基于Hadoop的数据仓库平台，由Facebook贡献，其支持类似SQL的结构化查询功能。Facebook设计开发Hive的初衷就是让那些熟悉sql编程方式的人也可以更好的利用hadoop，hive可以让数据分析人员只关注于具体业务模型，而不需要深入了解Map/Reduce的编程细节，但是这并不意味着使用hive不需要了解和学习Map/Reduce编程模型和hadoop，复杂的业务需求和模型总是存在的，对于Hive分析人员来说，深入了解Hadoop和Hive的原理和Mapreduce模型，对于优化查询总有益处。
+
