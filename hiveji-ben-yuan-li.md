@@ -90,333 +90,181 @@ Hive提供的默认文件存储格式有textfile、sequencefile、rcfile等。�
 
 对于上述的join语句
 
-由于表中数据为空，对于小数据量，hive会自动采取map join的方式来优化join，从mapreduce的编程模型来看，实现join的方式主要有map端join、reduce端join。Map端join利用hadoop 分布式缓存技术通过将小表变换成hashtable文件分发到各个task，map大表时可以直接判断hashtable来完成join，注意小表的hashtable是放在内存中的，在内存中作匹配，因此map join是一种非常快的join方式，也是一种常见的优化方式。如果小表够小，那么就可以以map join的方式来完成join完成。Hive通过设置hive.auto.convert.join=true\(默认值\)来自动完成map join的优化，而无需显示指示map join。缺省情况下map join的优化是打开的。 
-
-
+由于表中数据为空，对于小数据量，hive会自动采取map join的方式来优化join，从mapreduce的编程模型来看，实现join的方式主要有map端join、reduce端join。Map端join利用hadoop 分布式缓存技术通过将小表变换成hashtable文件分发到各个task，map大表时可以直接判断hashtable来完成join，注意小表的hashtable是放在内存中的，在内存中作匹配，因此map join是一种非常快的join方式，也是一种常见的优化方式。如果小表够小，那么就可以以map join的方式来完成join完成。Hive通过设置hive.auto.convert.join=true\(默认值\)来自动完成map join的优化，而无需显示指示map join。缺省情况下map join的优化是打开的。
 
 Reduce端join需要reducer来完成join过程，对于上述join代码，reduce 端join的mr流程如下，
 
-
-
-
-
-
-
 图：reduce端join的mapreduce过程
-
-
 
 相比于map join, reduce 端join无法再map过程中过滤任何记录，只能将join的两张表的所有数据按照join key进行shuffle/sort，并按照join key的hash值将&lt;key,value&gt;对分发到特定的reducer。Reducer对于所有的键值对执行join操作，例如0号（bookid的hash值为0）reducer收到的键值对如下，其中T1、T2表示记录的来源表，起到标识作用：
 
-
-
-
-
-
-
 图：reduce端join的reducer join
 
-
-
 Reducer端join无法避免的reduce截断以及传输的大量数据都会给集群网络带来压力，从上图可以看出所有hash\(bookid\)% reducer\_number等于0的key-value对都会通过shuffle被分发到0号reducer，如果分到0号reducer的记录数目远大于其他reducer的记录数目，显然0号的reducer的数据处理量将会远大于其他reducer，因此处理时间也会远大于其他reducer，甚至会带来内存等其他问题，这就是数据倾斜问题。对于join造成的数据倾斜问题我们可以通过设置参数setHive.optimize.skewjoin=true，让hive自己尝试解决join过程中产生的倾斜问题。
-
-
 
 3.2   Group by语句
 
 我们对user\_read\_log表按userid goup by语句来继续探讨数据倾斜问题，首先我们explain group by语句：
 
-
-
 \[sql\] view plain copy
 
-explain select userid,count\(\*\)from user\_read\_log groupby userid  
-
-
-
-
-
-图：goupby的执行计划
-
-
-
-
-
-
+explain select userid,count\(\*\)from user\_read\_log groupby userid
 
 Group by的执行计划按照userid的hash值分发记录，同时在map端也做了本地reduce，group by的shuffle过程是按照hash\(userid\)来分发的，实际应用中日志中很多用户都是未注册用户或者未登录，userid字段为空的记录数远大于userid不为空的记录数，当所有的空userid记录都分发到特定某一个reducer后，也会带来严重的数据倾斜问题。造成数据倾斜的主要原因在于分发到某个或某几个reducer的数据量远大于其他reducer的数据量。
 
-
-
-对于groupby造成的数据倾斜问题，我们可以通过设置参数 
-
-
+对于groupby造成的数据倾斜问题，我们可以通过设置参数
 
 \[sql\] view plain copy
 
-set hive.map.aggr=true \(开启map端combiner\);  
+set hive.map.aggr=true \(开启map端combiner\);
 
-set hive.groupby.skewindata=true；  
+set hive.groupby.skewindata=true；
 
 这个参数的作用是做Reduce操作的时候，拿到的key并不是所有相同值给同一个Reduce，而是随机分发，然后Reduce做聚合，做完之后再做一轮MR，拿前面聚合过的数据再算结果。虽然多了一轮MR任务，但是可以有效的减少数据倾斜问题可能带来的危险。
 
-
-
- 
-
-
-
 Hive解决数据倾斜
-
-
 
 正确的设置Hive参数可以在某种程度上避免的数据倾斜问题，合适的查询语句也可以避免数据倾斜问题。要尽早的过滤数据和裁剪数据，减少后续处理的数据量，使得join key的数据分布较为均匀，将空字段随机赋予值，这样既可以均匀分发倾斜的数据：
 
-
-
 \[sql\] view plain copy
 
-select userid,namefrom user\_info a  
+select userid,namefrom user\_info a
 
-join \(  
+join \(
 
-    select case when userid isnull then cast\(rand\(47\)\*100000as int\)  
+```
+select case when userid isnull then cast\(rand\(47\)\*100000as int\)  
 
-    else userid  
+else userid  
 
-    from user\_read\_log  
+from user\_read\_log  
+```
 
-\) b on a.userid= b.userid  
-
-
+\) b on a.userid= b.userid
 
 如果用户在定义schema的时候就已经预料到表数据可能会存在严重的数据倾斜问题，Hive自0.10.0引入了skew table的概念，如建表语句
 
-
-
 \[sql\] view plain copy
 
-CREATE TABLE user\_read\_log \(useridint,bookid,…\)  
+CREATE TABLE user\_read\_log \(useridint,bookid,…\)
 
-SKEWEDBY \(userid\) ON \(null\)\[STORED AS DIRECTORIES\];  
+SKEWEDBY \(userid\) ON \(null\)\[STORED AS DIRECTORIES\];
 
 需要注意的是，skewtable只是将倾斜特别严重的列的分开存储为不同的文件，每个制定的倾斜值制定为一个文件或者目录，因此在查询的时候可以通过过滤倾斜值来避免数据倾斜问题：
 
-
-
 \[sql\] view plain copy
 
-select userid,namefrom user\_info a  
+select userid,namefrom user\_info a
 
-join \(  
+join \(
 
-select userid from user\_read\_log where pt=’2015’and userid isnot null  
+select userid from user\_read\_log where pt=’2015’and userid isnot null
 
-\) b on a.userid= b.userid  
+\) b on a.userid= b.userid
 
 可以看出，如果不加过滤条件，倾斜问题还是会存在，通过对skewtable加过滤条件的好处是避免了mapper的表扫描过滤操作。
-
-
 
 3.3   Join的物理优化
 
 Hive内部实现了MapJoinResolver（处理MapJoin）、SkewJoinResolver（处理倾斜join）、CommonJoinResolver
 
-
-
 （处理普通Join）等类来实现join的查询物理优化（/org/apache/hadoop/hive/ql/optimizer/physical）。
-
-
 
 CommonJoinResolver类负责将普通Join转换成MapJoin，Hive通过这个类来实现mapjoin的自动优化。对于表A和表B的join查询，会产生3个分支：
 
-
-
 1\)        以表A作为大表进行Mapjoin；
-
-
 
 2\)        以表A作为大表进行Mapjoin；
 
-
-
 3\)        Map-reduce join
-
-
 
 由于不知道输入数据规模，因此编译时并不会决定走那个分支，而是在运行时判断走那个分支。需要注意的是要像完成上述自动转换，需要将hive.auto.convert.join.noconditionaltask设置为true（默认值），同时可以手工控制转载进内存的小表的大小（hive.auto.convert.join.noconditionaltask.size）。
 
-
-
 MapJoinResolver 类负责迭代各个mr任务，检查每个任务是否存在map join操作，如果有，会将local map work转换成local map join work。
 
-
-
 SkewJoinResolver类负责迭代有join操作的reducer任务，一旦单个reducer产生了倾斜，那么就会将倾斜值得数据写入hdfs，然后用一个新的map join的任务来处理倾斜值的计算。虽然多了一轮mr任务，但是由于采用的map join，效率也是很高的。良好的mr模式和执行流程总是至关重要的。
-
-
-
-
-
-
 
 4     窗口分析函数
 
 Hive提供了丰富了数学统计函数，同时也提供了用户自定义函数的接口，用户可以自定义UDF、UDAF、UDTF Hive 0.11版本开始提供窗口和分析函数（Windowingand Analytics Functions），包括LEAD、LAG、FIRST\_VALUE、LAST\_VALUE、RANK、ROW\_NUMBER、PERCENT\_RANK、CUBE、ROLLUP等。
 
-
-
 窗口函数是深受数据分析人员的喜爱，利用窗口函数可以方便的实现复杂的数据统计分析需求，oracle、db2、postgresql等数据库中也提供了window function的功能。窗口函数与聚合函数一样，都是对表子集的操作，从结果上看，区别在于窗口函数的结果不会聚合，原有的每行记录依然会存在。
-
-
 
 窗口函数的典型分析应用包括：
 
-
-
 1\)        按分区聚合（排序，topn问题）
-
-
 
 2\)        行间计算（时间序列分析）
 
-
-
 3\)        关联计算（购物篮分析）
-
-
 
 我们以一个简单的行间计算的例子说明窗口函数的应用（关于其他函数的具体说明，请参考hive文档）。用户阅读行为的统计分析需要从点击书籍行为中归纳统计出来，用户在时间点T1点击了章节A，在时间点T2点击了章节B，在时间点T3点击了章节C 。用户浏览日志结构如下表所示。
 
-
-
 USER\_ID
-
-
 
 BOOK\_ID
 
-
-
 CHAPTER\_ID
-
-
 
 LOG\_TIME
 
-
-
 1001
 
-
-
 2001
-
-
 
 40001
 
-
-
 1443016010
-
-
 
 1001
 
-
-
 2001
-
-
 
 40004
 
-
-
 1443016012
-
-
 
 1001
 
-
-
 2001
-
-
 
 40005
 
-
-
 1443016310
-
-
 
 通过对连续的用户点击日志分析，通过Hive提供的窗口分析函数可以计算出用户各章节的阅读时间。按照USER\_ID、BOOKID构建窗口，并按照LOG\_TIME排序，对窗口的每一条记录取相对下一条记录的LOG\_TIME减去当前记录的LOG\_TIME即为当前记录章节的阅读时间。
 
-
-
 \[sql\] view plain copy
 
-SELECT  
+SELECT
 
-    Userid, bookid, chapterid, end\_time – start\_timeas read\_time  
+```
+Userid, bookid, chapterid, end\_time – start\_timeas read\_time  
+```
 
-FROM  
+FROM
 
-\(  
+\(
 
-    SELECT userid, bookid, chapterid, log\_timeas start\_time,  
+```
+SELECT userid, bookid, chapterid, log\_timeas start\_time,  
 
-    lead\(log\_time,1,null\) over\(partitionby userid, bookidorder by log\_time\)as end\_time   
+lead\(log\_time,1,null\) over\(partitionby userid, bookidorder by log\_time\)as end\_time   
 
-    FROM user\_read\_logwhere pt=’2015-12-01’  
+FROM user\_read\_logwhere pt=’2015-12-01’  
+```
 
-\) a;  
-
-
+\) a;
 
 通过上述查询既可以找出2015-12-01日所有用户对每一章节的阅读时间。感谢窗口函数，否则hive将束手无策。只能通过开发mr代码或者实现udaf来实现上述功能。
 
-
-
 窗口分析函数关键在于定义的窗口数据集及其对窗口的操作，通过over（窗口定义语句）来定义窗口。日常分析和实际应用中，经常会有窗口分析应用的场景，例如基于分区的排序、集合、统计等复杂操作。例如我们需要统计每个用户阅读时间最多的3本书:
 
-
-
- 
-
-图：行间计算示意图及代码
-
-
-
-对上述语句explain后的结果：
-
-
-
-
-
-
-
-图：行间计算的执行计划
-
-
-
 窗口函数使得Hive的具备了完整的数据分析功能，在实际的应用环境中，达观数据分析团队大量使用hive窗口分析函数来实现较为复杂的逻辑，提高开发和迭代效率。
-
-
-
- 
-
-
 
 5     总结
 
 本文在介绍Hive的原理和架构的基础上，分享了达观团队在Hive上的部分使用经验。Hive仍然处在不断的发展之中，将HQL理解成Mapreduce程序、理解Hadoop的核心能力是更好的使用和优化Hive的根本。
-
-
 
 技术的发展日新月异，随着spark的日益完善和流行，hive社区正考虑将spark作为hive的执行引擎之一。Spark是一种基于rdd（弹性数据集）的内存分布式并行处理框架，内部集成了Spark SQL模块来实现对结构化数据的SQL功能。相比于Hadoop将大量的中间结果写入HDFS，Spark避免了中间结果的持久化，速度更快且更有利于迭代计算。 具体需要结合自身的业务需求，采取合理的框架架构，提升系统的处理能力。
 
