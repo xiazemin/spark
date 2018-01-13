@@ -48,3 +48,29 @@ export SPARK\_HOME=/home/iteblog/spark-1.4.1-bin-2.2.0
 
 15/08/28 11:00:32 ERROR yarn.ApplicationMaster: User class threw exception: java.lang.NoSuchFieldError: SPARK\_RPC\_CLIENT\_CONNECT\_TIMEOUT
 
+
+
+目前Hive支持三种执行引擎：mr、tez、spark。因为我们需要使用Spark执行引擎，所以需要将hive.execution.engine设置为spark，具体如下：
+
+
+
+hive&gt; set hive.execution.engine=spark;
+
+　　其实，我们还可以在Hive中设置很多关于Spark的配置，诸如spark.eventLog.enabled、spark.executor.memory以及spark.executor.instances等。如下：
+
+
+
+hive&gt; set spark.eventLog.enabled=true;
+
+hive&gt; set spark.eventLog.dir=hdfs://iteblog/spark-jobs/eventLog;
+
+hive&gt; set spark.executor.memory=4g;
+
+hive&gt; set spark.executor.cores=2;
+
+hive&gt; set spark.executor.instances=40;
+
+hive&gt; set spark.serializer=org.apache.spark.serializer.KryoSerializer;
+
+　　这样设置是不是很麻烦？我们可以在$HIVE\_HOME/conf里面创建spark-defaults.conf文件，然后加上需要设置的配置，最后设置到Hive启动的classpath环境中即可。当然，你完全可以将这些关于Spark的设置弄到hive-site.xml文件中，这样更方便。
+
