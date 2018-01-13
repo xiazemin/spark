@@ -16,17 +16,33 @@ Hive的组件总体上可以分为以下几个部分：用户接口（UI）、�
 
 据库对表数据进行写时严重不同，Hive对数据的验证方式为读时模式，即只有在读表数据的时候，hive才检查解析具体的字段、shema等，从而保证了大数据量的快速加载。
 
-
-
 既然hive采用的读时验证机制，那么 如果表schema与表文件内容不匹配，会发生什么呢？
-
-
 
 答案是hive会尽其所能的去读数据。如果schema中表有10个字段，而文件记录却只有3个字段，那么其中7个字段将为null；如果某些字段类型定位为数值类型，但是记录中却为非数值字符串，这些字段也将会被转换为null。简而言之，hive会努力catch读数据时遇到的错误，并努力返回。既然Hive表数据存储在HDFS中且Hive采用的是读时验证方式，定义完表的schema会自动生成表数据的HDFS目录，且我们可以以任何可能的方式来加载表数据或者利用HDFS API将数据写入文件，同理，当我们若需要将hive数据写入其他库（如oracle），也可以直接通过api读取数据再写入目标库。在实际生产环境中，当需要数据仓库之间的迁移时，就可以直接利用api将源库的数据直接写入hive库的表文件中，包括淘宝开源的datax数据交换系统都采用类似的方式来交换跨库数据。
 
-
-
 再次注意，加载或者写入的数据内容要和表定义的schema一致，否则将会造成字段或者表为空。
+
+1.2   Hive数据模型
+
+从数据仓库的角度看，Hive是建立在Hadoop上的数据仓库基础架构，可以方便的ETL操作。Hive没有专门的数据存储格式，也没有为数据建立索引，用于可以非常自由的组织Hive中的表，只需要在创建表的时候定义好表的schema即可。Hive中包含4中数据模型：Tabel、ExternalTable、Partition、Bucket。
+
+a\)         Table：类似与传统数据库中的Table，每一个Table在Hive中都有一个相应的目录来存储数据。例如：一个表t，它在HDFS中的路径为：/user/hive/warehouse/t。
+
+
+
+b\)        Partition：类似于传统数据库中划分列的索引。在Hive中，表中的一个Partition对应于表下的一个目录，所有的Partition数据都存储在对应的目录中。例如：t表中包含ds和city两个Partition，则对应于ds=2014，city=beijing的HDFS子目录为：/user/hive/warehouse/t/ds=2014/city=Beijing；
+
+
+
+需要注意的是，分区列是表的伪列，表数据文件中并不存在这个分区列的数据。
+
+
+
+c\)         Buckets：对指定列计算的hash，根据hash值切分数据，目的是为了便于并行，每一个Buckets对应一个文件。将user列分数至32个Bucket上，首先对user列的值计算hash，比如，对应hash=0的HDFS目录为：/user/hive/warehouse/t/ds=2014/city=Beijing/part-00000；对应hash=20的目录为：/user/hive/warehouse/t/ds=2014/city=Beijing/part-00020。
+
+
+
+d\)        External Table指向已存在HDFS中的数据，可创建Partition。Managed Table创建和数据加载过程，可以用统一语句实现，实际数据被转移到数据仓库目录中，之后对数据的访问将会直接在数据仓库的目录中完成。删除表时，表中的数据和元数据都会删除。ExternalTable只有一个过程，因为加载数据和创建表是同时完成。数据是存储在Location后面指定的HDFS路径中的，并不会移动到数据仓库中。
 
 
 
@@ -34,7 +50,7 @@ Hive的组件总体上可以分为以下几个部分：用户接口（UI）、�
 
 
 
-1.2   Hive数据模型
+1.3   Hive翻译成MapReduce Job
 
-从数据仓库的角度看，Hive是建立在Hadoop上的数据仓库基础架构，可以方便的ETL操作。Hive没有专门的数据存储格式，也没有为数据建立索引，用于可以非常自由的组织Hive中的表，只需要在创建表的时候定义好表的schema即可。Hive中包含4中数据模型：Tabel、ExternalTable、Partition、Bucket。
+Hive编译器将HQL代码转换成一组操作符（operator），操作符是Hive的最小操作单元，每个操作符代表了一种HDFS操作或者MapReduce作业。Hive中的操作符包括：
 
