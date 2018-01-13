@@ -16,5 +16,17 @@ cd $HIVE\_HOME/bin
 
 vi hive
 
+comment the following lines as follows
 
+\# add Spark assembly jar to the classpath
+
+\#if \[\[ -n "$SPARK\_HOME" \]\]
+
+\#then
+
+\#  sparkAssemblyPath=\`ls ${SPARK\_HOME}/lib/spark-assembly-\*.jar\`
+
+\#  CLASSPATH="${CLASSPATH}:${sparkAssemblyPath}"
+
+\#fi
 
