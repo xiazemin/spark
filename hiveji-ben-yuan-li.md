@@ -28,21 +28,25 @@ Hive的组件总体上可以分为以下几个部分：用户接口（UI）、�
 
 a\)         Table：类似与传统数据库中的Table，每一个Table在Hive中都有一个相应的目录来存储数据。例如：一个表t，它在HDFS中的路径为：/user/hive/warehouse/t。
 
-
-
 b\)        Partition：类似于传统数据库中划分列的索引。在Hive中，表中的一个Partition对应于表下的一个目录，所有的Partition数据都存储在对应的目录中。例如：t表中包含ds和city两个Partition，则对应于ds=2014，city=beijing的HDFS子目录为：/user/hive/warehouse/t/ds=2014/city=Beijing；
-
-
 
 需要注意的是，分区列是表的伪列，表数据文件中并不存在这个分区列的数据。
 
-
-
 c\)         Buckets：对指定列计算的hash，根据hash值切分数据，目的是为了便于并行，每一个Buckets对应一个文件。将user列分数至32个Bucket上，首先对user列的值计算hash，比如，对应hash=0的HDFS目录为：/user/hive/warehouse/t/ds=2014/city=Beijing/part-00000；对应hash=20的目录为：/user/hive/warehouse/t/ds=2014/city=Beijing/part-00020。
 
-
-
 d\)        External Table指向已存在HDFS中的数据，可创建Partition。Managed Table创建和数据加载过程，可以用统一语句实现，实际数据被转移到数据仓库目录中，之后对数据的访问将会直接在数据仓库的目录中完成。删除表时，表中的数据和元数据都会删除。ExternalTable只有一个过程，因为加载数据和创建表是同时完成。数据是存储在Location后面指定的HDFS路径中的，并不会移动到数据仓库中。
+
+1.3   Hive翻译成MapReduce Job
+
+Hive编译器将HQL代码转换成一组操作符（operator），操作符是Hive的最小操作单元，每个操作符代表了一种HDFS操作或者MapReduce作业。Hive中的操作符包括：
+
+1.4   与一般SQL的区别
+
+Hive 视图与一般数据库视图
+
+
+
+Hive视图与一般数据库视图作用角色相同，都是基于数据规模缩减或者基于安全机制下的某些条件查询下的数据子集。Hive视图只支持逻辑视图，不支持物化视图，即每次对视图的查询hive都将执行查询任务，因此视图不会带来性能上的提升。作为Hive查询优化的一部分，对视图的查询条件语句和视图的定义查询条件语句将会尽可能的合并成一个条件查询。
 
 
 
@@ -50,7 +54,17 @@ d\)        External Table指向已存在HDFS中的数据，可创建Partition。
 
 
 
-1.3   Hive翻译成MapReduce Job
+Hive索引与一般数据库索引
 
-Hive编译器将HQL代码转换成一组操作符（operator），操作符是Hive的最小操作单元，每个操作符代表了一种HDFS操作或者MapReduce作业。Hive中的操作符包括：
+
+
+相比于传统数据库，Hive只提供有限的索引功能，通过在某些字段上建立索引来加速某些操作。通常当逻辑分区太多太细，partition无法满足时，可以考虑建立索引。Hive1.2.1版本目前支持的索引类型有CompactIndexHandler和Bitmap。
+
+
+
+CompactIndexHandler压缩索引通过将列中相同的值得字段进行压缩从而减小存储和加快访问时间。需要注意的是Hive创建压缩索引时会将索引数据也存储在Hive表中。对于表tb\_index \(id int, name string\)而言，建立索引后的索引表中默认的三列一次为索引列（id）、hdfs文件地址\(\_bucketname\)、偏移量\(offset\)。特别注意，offset列类型为array&lt;bigint&gt;。
+
+
+
+Bitmap位图索引作为一种常见的索引，如果索引列只有固定的几个值，那么就可以采用位图索引来加速查询。利用位图索引可以方便的进行AND/OR/XOR等各类计算，Hive0.8版本开始引入位图索引，位图索引在大数据处理方面的应用广泛，比如可以利用bitmap来计算用户留存率（索引做与运算，效率远好于join的方式）。如果Bitmap索引很稀疏，那么就需要对索引压缩以节省存储空间和加快IO。Hive的Bitmap Handler采用的是EWAH（https://github.com/lemire/javaewah）压缩方式。
 
