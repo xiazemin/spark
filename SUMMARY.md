@@ -46,4 +46,5 @@
   * [section15-1](chapter15/section1.md)
 * [log4j](log4j.md)
 * [Hive基本原理](hiveji-ben-yuan-li.md)
+* [hive复杂数据结构使用](hivefu-za-shu-ju-jie-gou-shi-yong.md)
 
