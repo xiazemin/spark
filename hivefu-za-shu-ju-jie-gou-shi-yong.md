@@ -401,7 +401,253 @@ Time taken: 32.298 seconds, Fetched: 3 row\(s\)
 
 map的字段不能放在where条件中
 
+hive array、map、struct使用
+
+hive提供了复合数据类型：
+
+Structs： structs内部的数据可以通过DOT（.）来存取，例如，表中一列c的类型为STRUCT{a INT; b INT}，我们可以通过c.a来访问域a
+
+Maps（K-V对）：访问指定域可以通过\["指定域名称"\]进行，例如，一个Map M包含了一个group-》gid的kv对，gid的值可以通过M\['group'\]来获取
+
+Arrays：array中的数据为相同类型，例如，假如array A中元素\['a','b','c'\]，则A\[1\]的值为'b'
 
 
 
+Struct使用
+
+
+
+建表：
+
+\[plain\] view plaincopy
+
+hive&gt; create table student\_test\(id INT, info struct&lt;name:STRING, age:INT&gt;\)  
+
+    &gt; ROW FORMAT DELIMITED FIELDS TERMINATED BY ','                         
+
+    &gt; COLLECTION ITEMS TERMINATED BY ':';                                   
+
+OK  
+
+Time taken: 0.446 seconds  
+
+'FIELDS TERMINATED BY' ：字段与字段之间的分隔符
+
+''COLLECTION ITEMS TERMINATED BY' ：一个字段各个item的分隔符 
+
+导入数据：
+
+
+
+\[plain\] view plaincopy
+
+$ cat test5.txt   
+
+1,zhou:30  
+
+2,yan:30  
+
+3,chen:20  
+
+4,li:80  
+
+hive&gt; LOAD DATA LOCAL INPATH '/home/work/data/test5.txt' INTO TABLE student\_test;  
+
+Copying data from file:/home/work/data/test5.txt  
+
+Copying file: file:/home/work/data/test5.txt  
+
+Loading data to table default.student\_test  
+
+OK  
+
+Time taken: 0.35 seconds  
+
+查询：
+
+
+
+\[plain\] view plaincopy
+
+hive&gt; select info.age from student\_test;  
+
+Total MapReduce jobs = 1  
+
+......  
+
+Total MapReduce CPU Time Spent: 490 msec  
+
+OK  
+
+30  
+
+30  
+
+20  
+
+80  
+
+Time taken: 21.677 seconds  
+
+
+
+Array使用
+
+建表：
+
+
+
+\[plain\] view plaincopy
+
+hive&gt; create table class\_test\(name string, student\_id\_list array&lt;INT&gt;\)  
+
+    &gt; ROW FORMAT DELIMITED                                              
+
+    &gt; FIELDS TERMINATED BY ','                                          
+
+    &gt; COLLECTION ITEMS TERMINATED BY ':';                               
+
+OK  
+
+Time taken: 0.099 seconds  
+
+导入数据：
+
+
+
+\[plain\] view plaincopy
+
+$ cat test6.txt   
+
+034,1:2:3:4  
+
+035,5:6  
+
+036,7:8:9:10  
+
+hive&gt;  LOAD DATA LOCAL INPATH '/home/work/data/test6.txt' INTO TABLE class\_test ;  
+
+Copying data from file:/home/work/data/test6.txt  
+
+Copying file: file:/home/work/data/test6.txt  
+
+Loading data to table default.class\_test  
+
+OK  
+
+Time taken: 0.198 seconds  
+
+查询：
+
+
+
+\[plain\] view plaincopy
+
+hive&gt; select student\_id\_list\[3\] from class\_test;  
+
+Total MapReduce jobs = 1  
+
+......  
+
+Total MapReduce CPU Time Spent: 480 msec  
+
+OK  
+
+4  
+
+NULL  
+
+10  
+
+Time taken: 21.574 seconds  
+
+
+
+Map使用
+
+建表：
+
+
+
+\[plain\] view plaincopy
+
+hive&gt; create table employee\(id string, perf map&lt;string, int&gt;\)       
+
+    &gt; ROW FORMAT DELIMITED                                          
+
+    &gt; FIELDS TERMINATED BY '\t'                                
+
+    &gt; COLLECTION ITEMS TERMINATED BY ','                       
+
+    &gt; MAP KEYS TERMINATED BY ':';                                    
+
+OK  
+
+Time taken: 0.144 seconds  
+
+‘MAP KEYS TERMINATED BY’ ：key value分隔符
+
+
+
+导入数据：
+
+
+
+\[plain\] view plaincopy
+
+$ cat test7.txt   
+
+1       job:80,team:60,person:70  
+
+2       job:60,team:80  
+
+3       job:90,team:70,person:100  
+
+hive&gt;  LOAD DATA LOCAL INPATH '/home/work/data/test7.txt' INTO TABLE employee;  
+
+查询：
+
+
+
+\[plain\] view plaincopy
+
+hive&gt; select perf\['person'\] from employee;  
+
+Total MapReduce jobs = 1  
+
+......  
+
+Total MapReduce CPU Time Spent: 460 msec  
+
+OK  
+
+70  
+
+NULL  
+
+100  
+
+Time taken: 20.902 seconds  
+
+hive&gt; select perf\['person'\] from employee where perf\['person'\] is not null;     
+
+Total MapReduce jobs = 1  
+
+.......  
+
+Total MapReduce CPU Time Spent: 610 msec  
+
+OK  
+
+70  
+
+100  
+
+Time taken: 21.989 seconds  
+
+hive&gt;   
+
+&lt;span style="font-family:Arial, Helvetica, sans-serif;"&gt;&lt;span style="white-space: normal;"&gt;  
+
+&lt;/span&gt;&lt;/span&gt; 
 
