@@ -34,7 +34,7 @@ shichang int,
 
 disnum int,  
 
-score float  
+score float
 ```
 
 \)
@@ -267,8 +267,6 @@ Time taken: 0.121 seconds, Fetched: 8 row\(s\)
 
 4\)：使用explode和lateral view结合查询
 
-\[html\] view plain copy
-
 hive&gt; select name,mo,time from people\_movie lateral view explode\(movie\) movie as mo,time;
 
 OK
@@ -297,8 +295,6 @@ Time taken: 0.147 seconds, Fetched: 8 row\(s\)
  类似于C语言中的结构体，内部数据通过X.X来获取，假设我们的数据格式是这样的，电影ABC，有1254人评价过，打分为7.4分
 ```
 
-\[html\] view plain copy
-
 ABC     1254:7.4
 
 DEF     256:4.9
@@ -308,8 +304,6 @@ XYZ     456:5.4
 ```
  1\)：创建数据表
 ```
-
-\[html\] view plain copy
 
 Time taken: 0.147 seconds, Fetched: 8 row\(s\)
 
@@ -326,8 +320,6 @@ hive&gt; create table movie\_score\(
 
  2\)：查询表数据
 ```
-
-\[html\] view plain copy
 
 hive&gt; select \* from movie\_score;
 
@@ -359,8 +351,6 @@ Time taken: 0.148 seconds, Fetched: 3 row\(s\)
  这里再另外介绍一个函数collect\_set\(\)，该函数的作用是将某字段的值进行去重汇总，产生Array类型字段，假设数据格式如下：
 ```
 
-\[html\] view plain copy
-
 hive&gt; select \* from test;
 
 OK
@@ -389,15 +379,11 @@ Time taken: 0.096 seconds, Fetched: 6 row\(s\)
   现在要统计每个id得到的等级
 ```
 
-\[html\] view plain copy
-
 select id,collect\_set\(name\) from test group by id;
 
 ```
   结果为
 ```
-
-\[html\] view plain copy
 
 Total MapReduce CPU Time Spent: 3 seconds 360 msec
 
@@ -410,4 +396,12 @@ OK
 3       \["B","C","D"\]
 
 Time taken: 32.298 seconds, Fetched: 3 row\(s\)
+
+注意
+
+map的字段不能放在where条件中
+
+
+
+
 
