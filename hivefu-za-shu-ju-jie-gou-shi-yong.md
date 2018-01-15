@@ -1,436 +1,413 @@
-  关于Hive的一些其他数据类型使用参考：Hive的数据类型解析和表的操作实例
-
-
+Hive的数据类型解析和表的操作实例
 
 1：Array
 
-     顾名思义就是数组，使用方式 array&lt;&gt;
+```
+ 顾名思义就是数组，使用方式 array&lt;&gt;
 
+ 1\)：创建表
 
+ 拿电影数据为例，数据的维度包括
+ 创建movie\_message表：
+```
 
-     1\)：创建表
+create table movie\_message\(
 
-     拿电影数据为例，数据的维度包括
+```
+id int,  
 
+title string,  
 
+daoyan array&lt;string&gt;,  
 
+bianju array&lt;string&gt;,  
 
+leixing array&lt;string&gt;,  
 
-      创建movie\_message表：
+zhuyan array&lt;string&gt;,  
 
+year int,  
 
+month int,  
 
-\[html\] view plain copy
+shichang int,  
 
-create table movie\_message\(  
+disnum int,  
 
-    id int,  
+score float  
+```
 
-    title string,  
+\)
 
-    daoyan array&lt;string&gt;,  
+comment "this table about movie's message"
 
-    bianju array&lt;string&gt;,  
+row format delimited fields terminated by ","
 
-    leixing array&lt;string&gt;,  
+collection items terminated by '/';
 
-    zhuyan array&lt;string&gt;,  
+```
+  加载数据（可以从本地加载，也可以从hdfs装载，当然也可以从别的表中查询结果进行转载），这里从本地装载
+```
 
-    year int,  
+load data local inpath "/home/master/mycode/new\_movies\_load.csv" into table movie\_message;
 
-    month int,  
+```
+2\)：查看array的元素
 
-    shichang int,  
+  用下标进行寻找，类似于其他编程语言中的数组访问
+```
 
-    disnum int,  
+hive&gt; select leixing\[0\] from movie\_message limit 5;
 
-    score float  
+OK
 
-\)  
+剧情
 
-comment "this table about movie's message"  
+剧情
 
-row format delimited fields terminated by ","  
+剧情
 
-collection items terminated by '/';  
+纪录片
 
-      加载数据（可以从本地加载，也可以从hdfs装载，当然也可以从别的表中查询结果进行转载），这里从本地装载
+喜剧
 
+Time taken: 1.116 seconds, Fetched: 5 row\(s\)
 
+3\)：内嵌查询及统计
 
-\[html\] view plain copy
+```
+ 这里就是 写在前边的话中提到的问题，这里使用explode和lateral view关键字，应该这样写
+```
 
-load data local inpath "/home/master/mycode/new\_movies\_load.csv" into table movie\_message;  
+select lx,count\(\*\) from movie\_message lateral view explode\(leixing\) leixing as lx group by lx;
 
-    2\)：查看array的元素
+```
+   结果为：
+```
 
-      用下标进行寻找，类似于其他编程语言中的数组访问
+传记    194
 
+儿童    18
 
+冒险    242
 
-\[html\] view plain copy
+剧情    1490
 
-hive&gt; select leixing\[0\] from movie\_message limit 5;  
+动作    252
 
-OK  
+动画    106
 
-剧情  
+历史    208
 
-剧情  
+古装    9
 
-剧情  
+同性    84
 
-纪录片  
+喜剧    618
 
-喜剧  
+奇幻    178
 
-Time taken: 1.116 seconds, Fetched: 5 row\(s\)  
+家庭    130
 
-   3\)：内嵌查询及统计
+恐怖    152
 
-     这里就是 写在前边的话中提到的问题，这里使用explode和lateral view关键字，应该这样写
+悬念    2
 
+悬疑    386
 
+情色    19
 
-\[html\] view plain copy
+惊悚    435
 
-select lx,count\(\*\) from movie\_message lateral view explode\(leixing\) leixing as lx group by lx;  
+戏曲    11
 
-       结果为：
+战争    144
 
-\[html\] view plain copy
+歌舞    40
 
-传记    194  
+武侠    1
 
-儿童    18  
+灾难    11
 
-冒险    242  
+爱情    404
 
-剧情    1490  
+犯罪    442
 
-动作    252  
+真人秀  6
 
-动画    106  
+短片    165
 
-历史    208  
+科幻    165
 
-古装    9  
+纪录片  620
 
-同性    84  
+脱口秀  10
 
-喜剧    618  
+舞台艺术        8
 
-奇幻    178  
+西部    6
 
-家庭    130  
+运动    29
 
-恐怖    152  
+音乐    123
 
-悬念    2  
+鬼怪    1
 
-悬疑    386  
+黑色电影        4
 
-情色    19  
+```
+ 4\)：如何保存查询结果
 
-惊悚    435  
+   这里使用overwrite方法，只需在你的语句前加上即可
+```
 
-戏曲    11  
+insert overwrite local directory "you path"
 
-战争    144  
+```
+      也可以指定字段之间的分隔符
+```
 
-歌舞    40  
+row format delimited fields terminated by "\t"
 
-武侠    1  
+```
+      还是上边统计类型的例子，这里将其查询结果保存在本地/home/master/mycode/movie\_leixing
+```
 
-灾难    11  
+insert overwrite local directory "/home/master/mycode/movie\_leixing"
 
-爱情    404  
+row format delimited fields terminated by "\t"
 
-犯罪    442  
-
-真人秀  6  
-
-短片    165  
-
-科幻    165  
-
-纪录片  620  
-
-脱口秀  10  
-
-舞台艺术        8  
-
-西部    6  
-
-运动    29  
-
-音乐    123  
-
-鬼怪    1  
-
-黑色电影        4  
-
-     4\)：如何保存查询结果
-
-       这里使用overwrite方法，只需在你的语句前加上即可
-
-
-
-\[html\] view plain copy
-
-insert overwrite local directory "you path"  
-
-          也可以指定字段之间的分隔符
-
-\[html\] view plain copy
-
-row format delimited fields terminated by "\t"  
-
-          还是上边统计类型的例子，这里将其查询结果保存在本地/home/master/mycode/movie\_leixing
-
-\[html\] view plain copy
-
-insert overwrite local directory "/home/master/mycode/movie\_leixing"  
-
-row format delimited fields terminated by "\t"  
-
-select lx,count\(\*\) from movie\_message lateral view explode\(leixing\) leixing as lx group by lx;  
-
-          
+select lx,count\(\*\) from movie\_message lateral view explode\(leixing\) leixing as lx group by lx;
 
 2：Map
 
-     就是&lt;key:value&gt;这样的键值对，假设我们有这样格式的数据人物A，主演了BCD电影，将于2016-05上映
+```
+ 就是&lt;key:value&gt;这样的键值对，假设我们有这样格式的数据人物A，主演了BCD电影，将于2016-05上映
+```
 
+A       ABC:2016-05,EFG:2016-09
 
+B       OPQ:2015-06,XYZ:2016-04
 
+```
+ 1\)：创建表
+```
 
+create table people\_movie\(
 
-\[html\] view plain copy
+name string,
 
-A       ABC:2016-05,EFG:2016-09  
+movie map&lt;string,string&gt; \)
 
-B       OPQ:2015-06,XYZ:2016-04  
+row format delimited fields terminated by "\t"
 
-     1\)：创建表
+collection items terminated by ","
 
-\[html\] view plain copy
+map keys terminated by ":";
 
-create table people\_movie\(  
+load data local inpath "/home/master/map" into table people\_movie;
 
-name string,  
+```
+ 2\)：普通查看表数据
+```
 
-movie map&lt;string,string&gt; \)  
+hive&gt; select \* from people\_movie;
 
-row format delimited fields terminated by "\t"  
+OK
 
-collection items terminated by ","  
+A       {"ABC":"2016-05","EFG":"2016-09"}
 
-map keys terminated by ":";  
+B       {"OPQ":"2015-06","XYZ":"2016-04"}
 
-           加载数据
+A       {"ABC":"2016-05","EFG":"2016-09"}
 
-\[html\] view plain copy
+B       {"OPQ":"2015-06","XYZ":"2016-04"}
 
-load data local inpath "/home/master/map" into table people\_movie;  
+Time taken: 0.148 seconds, Fetched: 4 row\(s\)
 
-     2\)：普通查看表数据
+hive&gt; select movie\['ABC'\] from people\_movie;
 
-\[html\] view plain copy
+OK
 
-hive&gt; select \* from people\_movie;  
+2016-05
 
-OK  
+NULL
 
-A       {"ABC":"2016-05","EFG":"2016-09"}  
+2016-05
 
-B       {"OPQ":"2015-06","XYZ":"2016-04"}  
+NULL
 
-A       {"ABC":"2016-05","EFG":"2016-09"}  
+Time taken: 0.144 seconds, Fetched: 4 row\(s\)
 
-B       {"OPQ":"2015-06","XYZ":"2016-04"}  
+```
+3\)：使用explode关键字查询
+```
 
-Time taken: 0.148 seconds, Fetched: 4 row\(s\)  
+hive&gt; select explode\(movie\) as \(m\_name,m\_time\) from people\_movie;
 
-hive&gt; select movie\['ABC'\] from people\_movie;  
+OK
 
-OK  
+ABC     2016-05
 
-2016-05  
+EFG     2016-09
 
-NULL  
+OPQ     2015-06
 
-2016-05  
+XYZ     2016-04
 
-NULL  
+ABC     2016-05
 
-Time taken: 0.144 seconds, Fetched: 4 row\(s\)  
+EFG     2016-09
 
-    3\)：使用explode关键字查询
+OPQ     2015-06
 
-\[html\] view plain copy
+XYZ     2016-04
 
-hive&gt; select explode\(movie\) as \(m\_name,m\_time\) from people\_movie;  
+Time taken: 0.121 seconds, Fetched: 8 row\(s\)
 
-OK  
-
-ABC     2016-05  
-
-EFG     2016-09  
-
-OPQ     2015-06  
-
-XYZ     2016-04  
-
-ABC     2016-05  
-
-EFG     2016-09  
-
-OPQ     2015-06  
-
-XYZ     2016-04  
-
-Time taken: 0.121 seconds, Fetched: 8 row\(s\)  
-
-   4\)：使用explode和lateral view结合查询
+4\)：使用explode和lateral view结合查询
 
 \[html\] view plain copy
 
-hive&gt; select name,mo,time from people\_movie lateral view explode\(movie\) movie as mo,time;   
+hive&gt; select name,mo,time from people\_movie lateral view explode\(movie\) movie as mo,time;
 
-OK  
+OK
 
-A       ABC     2016-05  
+A       ABC     2016-05
 
-A       EFG     2016-09  
+A       EFG     2016-09
 
-B       OPQ     2015-06  
+B       OPQ     2015-06
 
-B       XYZ     2016-04  
+B       XYZ     2016-04
 
-A       ABC     2016-05  
+A       ABC     2016-05
 
-A       EFG     2016-09  
+A       EFG     2016-09
 
-B       OPQ     2015-06  
+B       OPQ     2015-06
 
-B       XYZ     2016-04  
+B       XYZ     2016-04
 
-Time taken: 0.147 seconds, Fetched: 8 row\(s\)  
+Time taken: 0.147 seconds, Fetched: 8 row\(s\)
 
 3：Structs
 
-     类似于C语言中的结构体，内部数据通过X.X来获取，假设我们的数据格式是这样的，电影ABC，有1254人评价过，打分为7.4分
-
-
-
-\[html\] view plain copy
-
-ABC     1254:7.4  
-
-DEF     256:4.9  
-
-XYZ     456:5.4  
-
-     1\)：创建数据表
+```
+ 类似于C语言中的结构体，内部数据通过X.X来获取，假设我们的数据格式是这样的，电影ABC，有1254人评价过，打分为7.4分
+```
 
 \[html\] view plain copy
 
-Time taken: 0.147 seconds, Fetched: 8 row\(s\)  
+ABC     1254:7.4
 
-hive&gt; create table movie\_score\(  
+DEF     256:4.9
 
-    &gt; name string,  
+XYZ     456:5.4
 
-    &gt; info struct&lt;number:int,score:float&gt;  
-
-    &gt; \)row format delimited fields terminated by "\t"  
-
-    &gt; collection items terminated by ":";  
-
-     2\)：查询表数据
+```
+ 1\)：创建数据表
+```
 
 \[html\] view plain copy
 
-hive&gt; select \* from movie\_score;  
+Time taken: 0.147 seconds, Fetched: 8 row\(s\)
 
-OK  
+hive&gt; create table movie\_score\(
 
-ABC     {"number":1254,"score":7.4}  
+```
+&gt; name string,  
 
-DEF     {"number":256,"score":4.9}  
+&gt; info struct&lt;number:int,score:float&gt;  
 
-XYZ     {"number":456,"score":5.4}  
+&gt; \)row format delimited fields terminated by "\t"  
 
-Time taken: 0.103 seconds, Fetched: 3 row\(s\)  
+&gt; collection items terminated by ":";  
 
-hive&gt; select info.number,info.score from movie\_score;  
+ 2\)：查询表数据
+```
 
-OK  
+\[html\] view plain copy
 
-1254    7.4  
+hive&gt; select \* from movie\_score;
 
-256     4.9  
+OK
 
-456     5.4  
+ABC     {"number":1254,"score":7.4}
 
-Time taken: 0.148 seconds, Fetched: 3 row\(s\)  
+DEF     {"number":256,"score":4.9}
+
+XYZ     {"number":456,"score":5.4}
+
+Time taken: 0.103 seconds, Fetched: 3 row\(s\)
+
+hive&gt; select info.number,info.score from movie\_score;
+
+OK
+
+1254    7.4
+
+256     4.9
+
+456     5.4
+
+Time taken: 0.148 seconds, Fetched: 3 row\(s\)
 
 4：collect\_set函数
 
-     这里再另外介绍一个函数collect\_set\(\)，该函数的作用是将某字段的值进行去重汇总，产生Array类型字段，假设数据格式如下：
-
-
-
-\[html\] view plain copy
-
-hive&gt; select \* from test;  
-
-OK  
-
-1       A  
-
-1       C  
-
-1       B  
-
-2       B  
-
-2       C  
-
-2       D  
-
-3       B  
-
-3       C  
-
-3       D  
-
-Time taken: 0.096 seconds, Fetched: 6 row\(s\)  
-
-      现在要统计每个id得到的等级
+```
+ 这里再另外介绍一个函数collect\_set\(\)，该函数的作用是将某字段的值进行去重汇总，产生Array类型字段，假设数据格式如下：
+```
 
 \[html\] view plain copy
 
-select id,collect\_set\(name\) from test group by id;  
+hive&gt; select \* from test;
 
-      结果为
+OK
+
+1       A
+
+1       C
+
+1       B
+
+2       B
+
+2       C
+
+2       D
+
+3       B
+
+3       C
+
+3       D
+
+Time taken: 0.096 seconds, Fetched: 6 row\(s\)
+
+```
+  现在要统计每个id得到的等级
+```
 
 \[html\] view plain copy
 
-Total MapReduce CPU Time Spent: 3 seconds 360 msec  
+select id,collect\_set\(name\) from test group by id;
 
-OK  
+```
+  结果为
+```
 
-1       \["A","C","B"\]  
+\[html\] view plain copy
 
-2       \["B","C","D"\]  
+Total MapReduce CPU Time Spent: 3 seconds 360 msec
 
-3       \["B","C","D"\]  
+OK
 
-Time taken: 32.298 seconds, Fetched: 3 row\(s\)  
+1       \["A","C","B"\]
 
+2       \["B","C","D"\]
 
+3       \["B","C","D"\]
 
-
+Time taken: 32.298 seconds, Fetched: 3 row\(s\)
 
